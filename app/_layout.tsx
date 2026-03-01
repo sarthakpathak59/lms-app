@@ -1,24 +1,55 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { ActivityIndicator, View } from 'react-native';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { CourseProvider } from '@/context/CourseContext';
+import { useAppBootstrap } from '@/hooks/useAppBootstrap';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+function RootNavigator() {
+  const { userToken, loading } = useAuth();
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  if (loading) {
+    return (
+      <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack screenOptions={{ headerShown: false }}>
+      {userToken ? (
+        <>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="course/[id]"
+            options={{ presentation: 'card', headerShown: false }}
+          />
+          <Stack.Screen
+            name="webview/[id]"
+            options={{ presentation: 'modal', headerShown: false }}
+          />
+        </>
+      ) : (
+        <Stack.Screen name="(auth)" />
+      )}
+    </Stack>
+  );
+}
+
+function AppShell() {
+  useAppBootstrap();
+
+  return (
+    <CourseProvider>
+      <RootNavigator />
+    </CourseProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
   );
 }
