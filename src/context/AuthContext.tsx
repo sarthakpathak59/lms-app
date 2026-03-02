@@ -11,6 +11,7 @@ import { jwtDecode } from 'jwt-decode';
 import {
   fetchCurrentUser,
   loginUser,
+  refreshAccessToken,
   registerUser,
 } from '@/services/auth.service';
 import { setSessionExpiredHandler } from '@/services/api';
@@ -89,6 +90,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const hydrateSession = useCallback(async () => {
     try {
       const token = await SecureStore.getItemAsync('access_token');
+      const refreshToken = await SecureStore.getItemAsync('refresh_token');
+      console.log('[Auth] stored access_token:', token);
+      console.log('[Auth] stored refresh_token:', refreshToken);
       const cachedUser = await readPersistedUser();
 
       if (token && isTokenValid(token)) {
@@ -99,11 +103,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
+      if (refreshToken) {
+        const refreshedTokens = await refreshAccessToken(refreshToken);
+
+        if (refreshedTokens?.accessToken) {
+          await SecureStore.setItemAsync('access_token', refreshedTokens.accessToken);
+
+          if (refreshedTokens.refreshToken) {
+            await SecureStore.setItemAsync('refresh_token', refreshedTokens.refreshToken);
+          }
+
+          setUserToken(refreshedTokens.accessToken);
+
+          if (cachedUser) {
+            setUser(cachedUser);
+          } else {
+            const me = await fetchCurrentUser();
+            setUser(me);
+            await persistUser(me);
+          }
+
+          return;
+        }
+      }
+
       await clearSession();
     } finally {
       setLoading(false);
     }
-  }, [clearSession, readPersistedUser]);
+  }, [clearSession, persistUser, readPersistedUser]);
 
   useEffect(() => {
     setSessionExpiredHandler(async () => {
@@ -136,6 +164,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (tokens.refreshToken) {
         await SecureStore.setItemAsync('refresh_token', tokens.refreshToken);
       }
+      console.log(
+        '[Auth] saved access_token:',
+        await SecureStore.getItemAsync('access_token')
+      );
+      console.log(
+        '[Auth] saved refresh_token:',
+        await SecureStore.getItemAsync('refresh_token')
+      );
 
       setUserToken(tokens.accessToken);
 

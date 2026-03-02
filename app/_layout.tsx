@@ -15,23 +15,25 @@ function RootNavigator() {
     );
   }
 
+  if (userToken) {
+    return (
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="course/[id]"
+          options={{ presentation: 'card', headerShown: false }}
+        />
+        <Stack.Screen
+          name="webview/[id]"
+          options={{ presentation: 'modal', headerShown: false }}
+        />
+      </Stack>
+    );
+  }
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {userToken ? (
-        <>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="course/[id]"
-            options={{ presentation: 'card', headerShown: false }}
-          />
-          <Stack.Screen
-            name="webview/[id]"
-            options={{ presentation: 'modal', headerShown: false }}
-          />
-        </>
-      ) : (
-        <Stack.Screen name="(auth)" />
-      )}
+      <Stack.Screen name="(auth)" />
     </Stack>
   );
 }

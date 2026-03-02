@@ -32,7 +32,6 @@ const extractTokens = (payload: any): AuthTokens | null => {
 export const loginUser = async (payload: LoginPayload) => {
   const response = await api.post('/users/login', payload);
   const data = response.data;
-
   return {
     tokens: extractTokens(data),
     user: extractUser(data),

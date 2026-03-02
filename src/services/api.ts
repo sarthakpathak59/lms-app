@@ -42,6 +42,19 @@ const api: AxiosInstance = axios.create({
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+const isSessionManagedRoute = (url: string): boolean => {
+  if (!url) {
+    return false;
+  }
+
+  return !(
+    url.startsWith('/public/') ||
+    url.startsWith('/users/login') ||
+    url.startsWith('/users/register') ||
+    url.startsWith('/users/refresh-token')
+  );
+};
+
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const token = await SecureStore.getItemAsync('access_token');
@@ -92,6 +105,7 @@ api.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryConfig;
+    const requestUrl = originalRequest?.url || '';
 
     if (error.code === 'ECONNABORTED') {
       return Promise.reject({
@@ -119,17 +133,29 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
+      console.log('[API] 401 for request:', requestUrl);
 
       const newToken = await refreshTokenFlow();
 
       if (newToken) {
         originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        console.log('[API] token refreshed, retrying request:', requestUrl);
         return api(originalRequest);
+      }
+
+      if (!isSessionManagedRoute(requestUrl)) {
+        return Promise.reject({
+          message: getErrorMessage(error),
+          code: error.code,
+          status: error.response?.status,
+          raw: error,
+        });
       }
 
       await SecureStore.deleteItemAsync('access_token');
       await SecureStore.deleteItemAsync('refresh_token');
+      console.log('[API] session cleared after 401:', requestUrl);
 
       if (onSessionExpired) {
         await onSessionExpired();

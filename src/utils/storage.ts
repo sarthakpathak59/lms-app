@@ -2,7 +2,8 @@ import * as SecureStore from 'expo-secure-store';
 
 const PREFIX = 'lms_app';
 
-const keyWithPrefix = (key: string) => `${PREFIX}:${key}`;
+const keyWithPrefix = (key: string) =>
+  `${PREFIX}_${key}`.replace(/[^A-Za-z0-9._-]/g, '_');
 
 export const storage = {
   async getString(key: string): Promise<string | null> {
