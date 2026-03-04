@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCourses } from '@/context/CourseContext';
@@ -28,6 +28,30 @@ export default function WebContentScreen() {
 
   const webViewModule = getWebViewModule();
   const WebView = webViewModule?.WebView;
+  const webViewRef = useRef<any>(null);
+
+  const bridgeHeaders = useMemo(
+    () => ({
+      'X-Course-Id': course?.id || '',
+      'X-Instructor-Name': course?.instructor.name || '',
+    }),
+    [course]
+  );
+
+  const nativeBridgeScript = useMemo(() => {
+    const serializedHeaders = JSON.stringify(bridgeHeaders).replace(
+      /</g,
+      '\\u003c'
+    );
+
+    return `
+      window.__NATIVE_HEADERS__ = ${serializedHeaders};
+      window.dispatchEvent(new CustomEvent('nativeHeaders', {
+        detail: window.__NATIVE_HEADERS__
+      }));
+      true;
+    `;
+  }, [bridgeHeaders]);
 
   const html = useMemo(() => {
     if (!course) {
@@ -48,8 +72,25 @@ export default function WebContentScreen() {
           <p class="pill">Instructor: ${escapeHtml(course.instructor.name)}</p>
           <p>${escapeHtml(course.description)}</p>
           <script>
+            const renderHeaders = headers => {
+              const el = document.getElementById('native-headers');
+              if (!el) return;
+              el.textContent = JSON.stringify(headers, null, 2);
+            };
+
+            window.addEventListener('nativeHeaders', event => {
+              renderHeaders(event.detail || {});
+              window.ReactNativeWebView?.postMessage('native_headers_received');
+            });
+
+            if (window.__NATIVE_HEADERS__) {
+              renderHeaders(window.__NATIVE_HEADERS__);
+            }
+
             window.ReactNativeWebView?.postMessage('webview_loaded');
           </script>
+          <h3>Native Headers</h3>
+          <pre id="native-headers">Waiting for native headers...</pre>
         </body>
       </html>
     `;
@@ -91,19 +132,21 @@ export default function WebContentScreen() {
       </View>
 
       <WebView
+        ref={webViewRef}
         onError={() => Alert.alert('WebView error', 'Failed to load embedded content.')}
+        onLoadEnd={() => {
+          webViewRef.current?.injectJavaScript(nativeBridgeScript);
+        }}
         onMessage={(event: { nativeEvent: { data: string } }) => {
           if (event.nativeEvent.data === 'webview_loaded') {
+            webViewRef.current?.injectJavaScript(nativeBridgeScript);
+          }
+
+          if (event.nativeEvent.data === 'native_headers_received') {
             // Native-to-Web communication verification point.
           }
         }}
-        source={{
-          html,
-          headers: {
-            'X-Course-Id': course.id,
-            'X-Instructor-Name': course.instructor.name,
-          },
-        }}
+        source={{ html }}
         style={styles.webview}
       />
     </View>

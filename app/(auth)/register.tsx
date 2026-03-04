@@ -10,12 +10,17 @@ import {
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { validateEmail, validatePassword } from '@/utils/validation';
+import {
+  normalizeUsername,
+  validateEmail,
+  validatePassword,
+  validateUsername,
+} from '@/utils/validation';
 
 export default function RegisterScreen() {
   const { register } = useAuth();
 
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,8 +29,17 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     setError(null);
 
-    if (!name.trim()) {
-      setError('Name is required.');
+    const normalizedUsername = normalizeUsername(username);
+
+    if (!normalizedUsername) {
+      setError('Username is required.');
+      return;
+    }
+
+    if (!validateUsername(normalizedUsername)) {
+      setError(
+        'Username must be 3-30 chars and use only lowercase letters, numbers, or _.'
+      );
       return;
     }
 
@@ -41,7 +55,11 @@ export default function RegisterScreen() {
 
     try {
       setLoading(true);
-      const successMessage = await register(name.trim(), email.trim(), password);
+      const successMessage = await register(
+        normalizedUsername,
+        email.trim(),
+        password
+      );
       Alert.alert('Success', successMessage);
       router.replace('/(auth)/login');
     } catch (err: any) {
@@ -57,10 +75,11 @@ export default function RegisterScreen() {
       <Text style={styles.subtitle}>Join the learning platform</Text>
 
       <TextInput
-        onChangeText={setName}
-        placeholder="Full Name"
+        autoCapitalize="none"
+        onChangeText={setUsername}
+        placeholder="Username"
         style={styles.input}
-        value={name}
+        value={username}
       />
 
       <TextInput

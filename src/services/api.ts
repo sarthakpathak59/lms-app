@@ -133,14 +133,12 @@ api.interceptors.response.use(
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
-      console.log('[API] 401 for request:', requestUrl);
 
       const newToken = await refreshTokenFlow();
 
       if (newToken) {
         originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        console.log('[API] token refreshed, retrying request:', requestUrl);
         return api(originalRequest);
       }
 
@@ -155,7 +153,6 @@ api.interceptors.response.use(
 
       await SecureStore.deleteItemAsync('access_token');
       await SecureStore.deleteItemAsync('refresh_token');
-      console.log('[API] session cleared after 401:', requestUrl);
 
       if (onSessionExpired) {
         await onSessionExpired();

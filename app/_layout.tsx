@@ -18,6 +18,7 @@ function RootNavigator() {
   if (userToken) {
     return (
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="course/[id]"
@@ -33,6 +34,7 @@ function RootNavigator() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
       <Stack.Screen name="(auth)" />
     </Stack>
   );

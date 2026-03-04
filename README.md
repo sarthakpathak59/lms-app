@@ -1,50 +1,117 @@
-# Welcome to your Expo app 👋
+# Mini LMS App (React Native Expo)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A production-style Mini LMS mobile app built with React Native Expo + TypeScript.
 
-## Get started
+## Tech Stack
+- Expo SDK 54 + React Native 0.81
+- TypeScript (`strict: true`)
+- Expo Router
+- Axios (interceptors, retry, timeout, token refresh)
+- Secure storage: `expo-secure-store`
+- App storage: `AsyncStorage` (if installed) with safe fallback
+- Notifications: `expo-notifications` (optional runtime dependency)
+- Web content: `react-native-webview` (optional runtime dependency)
 
-1. Install dependencies
+## Implemented Features
 
-   ```bash
-   npm install
-   ```
+### 1) Authentication & Session Management
+- Register + login using `/users/register` and `/users/login`
+- Access/refresh token handling
+- Auto-login on app restart
+- Session invalidation on refresh failure or auth expiry
+- Logout with secure token cleanup
 
-2. Start the app
+### 2) Profile
+- User profile information (username/email/role)
+- Profile picture URL update with local persistence
+- User stats (enrolled count, bookmarks, progress)
 
-   ```bash
-   npx expo start
-   ```
+### 3) Course Catalog
+- Fetches:
+  - `/public/randomusers` (instructors)
+  - `/public/randomproducts` (courses)
+- Search by title/description/instructor
+- Bookmark toggle + persistent bookmarks
+- Pull-to-refresh
+- Course details page with enroll/bookmark actions
 
-In the output, you'll find options to open the app in a
+### 4) WebView Integration
+- Embedded course content screen
+- Local HTML template rendering
+- Native-to-WebView communication via request headers
+- WebView load/error handling
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### 5) Native Features
+- Notification permission request on bootstrap
+- Notification when 5+ bookmarks reached
+- Reminder notification when app inactive for 24h+
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 6) State, Performance, and Resilience
+- Global auth and course contexts
+- Memoized course cards
+- Optimized list wrapper (`LegendList` over `FlatList`)
+- API retry with backoff for transient failures
+- Request timeout handling
+- Offline mode banner + cached course fallback
 
-## Get a fresh project
+## Project Structure
+- `app/` : Expo Router screens
+- `src/context/` : Auth and Course state
+- `src/services/` : API, auth, course, notifications
+- `src/components/` : Reusable UI components
+- `src/utils/` : Storage and error helpers
 
-When you're ready, run:
-
+## Setup
+1. Install deps
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Configure env
+Create `.env`:
+```bash
+EXPO_PUBLIC_API_BASE_URL=https://api.freeapi.app/api/v1
+```
 
-## Learn more
+3. Run app
+```bash
+npm run start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Optional Packages For Full Feature Runtime
+These are loaded dynamically in code and should be installed in normal dev environments:
+```bash
+npm install @react-native-async-storage/async-storage react-native-webview expo-notifications
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Build (APK)
+Use EAS development build:
+```bash
+npx eas build -p android --profile development
+```
 
-## Join the community
+## Key Architecture Decisions
+- Tokens and user session data are kept in SecureStore.
+- Non-sensitive app state (bookmarks/enrollments/preferences/cached courses) uses app storage abstraction.
+- API errors are normalized to present user-friendly messages.
+- Session expiration is coordinated between API layer and auth context via a callback.
 
-Join our community of developers creating universal apps.
+## Known Limitations
+- NativeWind is not yet integrated in this snapshot (current UI uses `StyleSheet`).
+- In this environment, network-restricted package install prevented adding optional dependencies automatically.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Screens To Capture For Submission
+- Login / Register
+- Course list (search + bookmark filter)
+- Course details (enroll + bookmark)
+- WebView content screen
+- Profile screen with stats
+- Offline banner state
+
+## Demo Video Checklist (3-5 min)
+- Login flow
+- Course discovery + search + refresh
+- Bookmark threshold notification trigger
+- Course enroll + details
+- WebView content open
+- Offline/error behavior

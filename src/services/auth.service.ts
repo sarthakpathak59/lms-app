@@ -9,8 +9,8 @@ interface LoginPayload {
 interface RegisterPayload {
   email: string;
   password: string;
-  role: string;
   username: string;
+  role?: string;
 }
 
 const extractUser = (payload: any): User | null => {

@@ -16,6 +16,7 @@ import { storage } from '@/utils/storage';
 const BOOKMARKS_KEY = 'bookmarks';
 const ENROLLED_KEY = 'enrolled_courses';
 const PREFERENCES_KEY = 'user_preferences';
+const COURSES_CACHE_KEY = 'courses_cache';
 
 interface Preferences {
   showOnlyBookmarked: boolean;
@@ -61,15 +62,19 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const hydrate = async () => {
-      const [bookmarks, enrolled, prefs] = await Promise.all([
+      const [bookmarks, enrolled, prefs, cachedCourses] = await Promise.all([
         storage.getJSON<string[]>(BOOKMARKS_KEY, []),
         storage.getJSON<string[]>(ENROLLED_KEY, []),
         storage.getJSON<Preferences>(PREFERENCES_KEY, defaultPreferences),
+        storage.getJSON<Course[]>(COURSES_CACHE_KEY, []),
       ]);
 
       setBookmarkedCourseIds(bookmarks);
       setEnrolledCourseIds(enrolled);
       setPreferences(prefs);
+      if (cachedCourses.length > 0) {
+        setCourses(cachedCourses);
+      }
     };
 
     void hydrate();
@@ -87,6 +92,7 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
 
       const nextCourses = await fetchCoursesWithInstructors();
       setCourses(nextCourses);
+      await storage.setJSON(COURSES_CACHE_KEY, nextCourses);
       setIsOffline(false);
     } catch (err) {
       setError(getErrorMessage(err, 'Unable to load courses right now.'));
@@ -107,18 +113,20 @@ export const CourseProvider = ({ children }: { children: ReactNode }) => {
     await fetchCourses(true);
   }, [fetchCourses]);
 
-  const toggleBookmark = useCallback(
-    async (courseId: string) => {
-      const nextBookmarks = bookmarkedCourseIds.includes(courseId)
-        ? bookmarkedCourseIds.filter(id => id !== courseId)
-        : [...bookmarkedCourseIds, courseId];
+  const toggleBookmark = useCallback(async (courseId: string) => {
+    let nextBookmarks: string[] = [];
 
-      setBookmarkedCourseIds(nextBookmarks);
-      await storage.setJSON(BOOKMARKS_KEY, nextBookmarks);
-      await notifyBookmarkMilestone(nextBookmarks.length);
-    },
-    [bookmarkedCourseIds]
-  );
+    setBookmarkedCourseIds(previousBookmarks => {
+      nextBookmarks = previousBookmarks.includes(courseId)
+        ? previousBookmarks.filter(id => id !== courseId)
+        : [...previousBookmarks, courseId];
+
+      return nextBookmarks;
+    });
+
+    await storage.setJSON(BOOKMARKS_KEY, nextBookmarks);
+    await notifyBookmarkMilestone(nextBookmarks.length);
+  }, []);
 
   const enroll = useCallback(
     async (courseId: string): Promise<boolean> => {

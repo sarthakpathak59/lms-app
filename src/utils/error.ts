@@ -26,6 +26,7 @@ export const isNetworkError = (err: unknown): boolean => {
   const error = err as { code?: string; message?: string };
 
   return (
+    error?.code === 'TIMEOUT' ||
     error?.code === 'ERR_NETWORK' ||
     error?.message?.toLowerCase().includes('network') ||
     error?.message?.toLowerCase().includes('offline') ||

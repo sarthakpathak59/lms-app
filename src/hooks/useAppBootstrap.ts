@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import {
-  notifyIfInactiveFor24Hours,
+  refreshInactivityReminder,
   requestNotificationPermissions,
 } from '@/services/notifications';
 
@@ -8,7 +8,7 @@ export const useAppBootstrap = () => {
   useEffect(() => {
     const bootstrap = async () => {
       await requestNotificationPermissions();
-      await notifyIfInactiveFor24Hours();
+      await refreshInactivityReminder();
     };
 
     void bootstrap();

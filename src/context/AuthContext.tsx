@@ -1,3 +1,15 @@
+import { setSessionExpiredHandler } from '@/services/api';
+import {
+  fetchCurrentUser,
+  loginUser,
+  refreshAccessToken,
+  registerUser,
+} from '@/services/auth.service';
+import { DecodedJwt, User } from '@/types/auth';
+import { getErrorMessage } from '@/utils/error';
+import { router } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import { jwtDecode } from 'jwt-decode';
 import {
   createContext,
   ReactNode,
@@ -6,17 +18,6 @@ import {
   useEffect,
   useState,
 } from 'react';
-import * as SecureStore from 'expo-secure-store';
-import { jwtDecode } from 'jwt-decode';
-import {
-  fetchCurrentUser,
-  loginUser,
-  refreshAccessToken,
-  registerUser,
-} from '@/services/auth.service';
-import { setSessionExpiredHandler } from '@/services/api';
-import { DecodedJwt, User } from '@/types/auth';
-import { getErrorMessage } from '@/utils/error';
 
 interface AuthContextType {
   userToken: string | null;
@@ -28,7 +29,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const USER_CACHE_KEY = 'auth_user';
 
 const isTokenValid = (token: string | null): boolean => {
   if (!token) {
@@ -56,33 +56,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const persistUser = useCallback(async (nextUser: User | null) => {
-    if (!nextUser) {
-      await SecureStore.deleteItemAsync(USER_CACHE_KEY);
-      return;
-    }
-
-    await SecureStore.setItemAsync(USER_CACHE_KEY, JSON.stringify(nextUser));
-  }, []);
-
-  const readPersistedUser = useCallback(async (): Promise<User | null> => {
-    const raw = await SecureStore.getItemAsync(USER_CACHE_KEY);
-
-    if (!raw) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(raw) as User;
-    } catch {
-      return null;
-    }
-  }, []);
-
   const clearSession = useCallback(async () => {
     await SecureStore.deleteItemAsync('access_token');
     await SecureStore.deleteItemAsync('refresh_token');
-    await SecureStore.deleteItemAsync(USER_CACHE_KEY);
     setUserToken(null);
     setUser(null);
   }, []);
@@ -91,51 +67,60 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const token = await SecureStore.getItemAsync('access_token');
       const refreshToken = await SecureStore.getItemAsync('refresh_token');
-      console.log('[Auth] stored access_token:', token);
-      console.log('[Auth] stored refresh_token:', refreshToken);
-      const cachedUser = await readPersistedUser();
 
       if (token && isTokenValid(token)) {
         setUserToken(token);
-        if (cachedUser) {
-          setUser(cachedUser);
+
+        const me = await fetchCurrentUser();
+        if (me) {
+          setUser(me);
+          return;
         }
+
+        await clearSession();
         return;
       }
 
       if (refreshToken) {
-        const refreshedTokens = await refreshAccessToken(refreshToken);
+        try {
+          const refreshedTokens = await refreshAccessToken(refreshToken);
 
-        if (refreshedTokens?.accessToken) {
-          await SecureStore.setItemAsync('access_token', refreshedTokens.accessToken);
+          if (refreshedTokens?.accessToken) {
+            await SecureStore.setItemAsync('access_token', refreshedTokens.accessToken);
 
-          if (refreshedTokens.refreshToken) {
-            await SecureStore.setItemAsync('refresh_token', refreshedTokens.refreshToken);
-          }
+            if (refreshedTokens.refreshToken) {
+              await SecureStore.setItemAsync(
+                'refresh_token',
+                refreshedTokens.refreshToken
+              );
+            }
 
-          setUserToken(refreshedTokens.accessToken);
-
-          if (cachedUser) {
-            setUser(cachedUser);
-          } else {
+            setUserToken(refreshedTokens.accessToken);
             const me = await fetchCurrentUser();
-            setUser(me);
-            await persistUser(me);
-          }
 
-          return;
+            if (me) {
+              setUser(me);
+              return;
+            }
+          }
+        } catch {
+          // Refresh token failed (e.g. 401): clear session gracefully.
         }
+
+        await clearSession();
+        return;
       }
 
       await clearSession();
     } finally {
       setLoading(false);
     }
-  }, [clearSession, persistUser, readPersistedUser]);
+  }, [clearSession]);
 
   useEffect(() => {
     setSessionExpiredHandler(async () => {
       await clearSession();
+      router.replace('/(auth)/login');
     });
 
     const safetyTimer = setTimeout(() => {
@@ -164,24 +149,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (tokens.refreshToken) {
         await SecureStore.setItemAsync('refresh_token', tokens.refreshToken);
       }
-      console.log(
-        '[Auth] saved access_token:',
-        await SecureStore.getItemAsync('access_token')
-      );
-      console.log(
-        '[Auth] saved refresh_token:',
-        await SecureStore.getItemAsync('refresh_token')
-      );
 
       setUserToken(tokens.accessToken);
 
       if (loginUserData) {
         setUser(loginUserData);
-        await persistUser(loginUserData);
       } else {
         const me = await fetchCurrentUser();
         setUser(me);
-        await persistUser(me);
       }
 
       return 'Login successful.';
@@ -191,7 +166,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (
-    name: string,
+    username: string,
     email: string,
     password: string
   ): Promise<string> => {
@@ -199,8 +174,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await registerUser({
         email,
         password,
-        role: 'USER',
-        username: name,
+        username,
       });
 
       return 'Registration successful. Please login to continue.';
@@ -211,6 +185,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     await clearSession();
+    router.replace('/(auth)/login');
   };
 
   return (

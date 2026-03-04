@@ -33,7 +33,13 @@ const CourseCardComponent = ({
             {course.title}
           </Text>
 
-          <TouchableOpacity onPress={onToggleBookmark} hitSlop={10}>
+          <TouchableOpacity
+            hitSlop={10}
+            onPress={event => {
+              event.stopPropagation();
+              onToggleBookmark();
+            }}
+          >
             <Ionicons
               name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
               size={22}
