@@ -1,6 +1,7 @@
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCourses } from '@/context/CourseContext';
+import { AppScreen } from '@/components/AppScreen';
 
 export default function CourseDetailsScreen() {
   const params = useLocalSearchParams<{ id: string }>();
@@ -18,12 +19,12 @@ export default function CourseDetailsScreen() {
 
   if (!course) {
     return (
-      <View style={styles.centered}>
+      <AppScreen contentContainerStyle={styles.centered}>
         <Text style={styles.error}>Course not found.</Text>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
-      </View>
+      </AppScreen>
     );
   }
 
@@ -42,7 +43,7 @@ export default function CourseDetailsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <AppScreen contentContainerStyle={styles.container} scroll>
       <Image source={{ uri: course.thumbnail }} style={styles.image} />
 
       <View style={styles.content}>
@@ -81,38 +82,41 @@ export default function CourseDetailsScreen() {
           <Text style={styles.backButtonText}>Back to courses</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f8fafc',
-    flex: 1,
+    paddingBottom: 24,
   },
   centered: {
     alignItems: 'center',
-    flex: 1,
     justifyContent: 'center',
+    padding: 24,
   },
   image: {
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
     height: 220,
+    marginTop: 8,
     width: '100%',
   },
   content: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   title: {
-    color: '#111827',
+    color: '#0f172a',
     fontSize: 24,
     fontWeight: '700',
   },
   instructor: {
-    color: '#6b7280',
+    color: '#475569',
     marginTop: 8,
   },
   description: {
-    color: '#374151',
+    color: '#334155',
     lineHeight: 22,
     marginTop: 14,
   },
@@ -123,10 +127,10 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     alignItems: 'center',
-    backgroundColor: '#2563eb',
-    borderRadius: 8,
+    backgroundColor: '#1d4ed8',
+    borderRadius: 12,
     flex: 1,
-    padding: 12,
+    padding: 13,
   },
   actionButtonMuted: {
     backgroundColor: '#059669',
@@ -137,22 +141,22 @@ const styles = StyleSheet.create({
   },
   secondaryAction: {
     alignItems: 'center',
-    borderColor: '#2563eb',
-    borderRadius: 8,
+    borderColor: '#1d4ed8',
+    borderRadius: 12,
     borderWidth: 1,
     flex: 1,
-    padding: 12,
+    padding: 13,
   },
   secondaryActionText: {
-    color: '#2563eb',
+    color: '#1d4ed8',
     fontWeight: '600',
   },
   openContentButton: {
     alignItems: 'center',
-    backgroundColor: '#111827',
-    borderRadius: 8,
+    backgroundColor: '#0f172a',
+    borderRadius: 12,
     marginTop: 14,
-    padding: 12,
+    padding: 13,
   },
   openContentText: {
     color: '#fff',
@@ -164,7 +168,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   backButtonText: {
-    color: '#374151',
+    color: '#334155',
     fontWeight: '500',
   },
   error: {

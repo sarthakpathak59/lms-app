@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCourses } from '@/context/CourseContext';
+import { AppScreen } from '@/components/AppScreen';
 
 const getWebViewModule = (): any | null => {
   try {
@@ -96,20 +97,29 @@ export default function WebContentScreen() {
     `;
   }, [course]);
 
+  const webviewSource = useMemo(() => {
+    const encodedHtml = encodeURIComponent(html);
+
+    return {
+      uri: `data:text/html;charset=utf-8,${encodedHtml}`,
+      headers: bridgeHeaders,
+    };
+  }, [bridgeHeaders, html]);
+
   if (!course) {
     return (
-      <View style={styles.centered}>
+      <AppScreen contentContainerStyle={styles.centered}>
         <Text style={styles.message}>Course not found.</Text>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.link}>Go back</Text>
         </TouchableOpacity>
-      </View>
+      </AppScreen>
     );
   }
 
   if (!WebView) {
     return (
-      <View style={styles.centered}>
+      <AppScreen contentContainerStyle={styles.centered}>
         <Text style={styles.message}>WebView package is not installed in this environment.</Text>
         <Text style={styles.subMessage}>
           Install `react-native-webview` to enable embedded content rendering.
@@ -117,12 +127,12 @@ export default function WebContentScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.link}>Close</Text>
         </TouchableOpacity>
-      </View>
+      </AppScreen>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <AppScreen contentContainerStyle={styles.container}>
       <View style={styles.topBar}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.link}>Close</Text>
@@ -146,16 +156,15 @@ export default function WebContentScreen() {
             // Native-to-Web communication verification point.
           }
         }}
-        source={{ html }}
+        source={webviewSource}
         style={styles.webview}
       />
-    </View>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
     flex: 1,
   },
   centered: {
@@ -166,15 +175,21 @@ const styles = StyleSheet.create({
   },
   topBar: {
     alignItems: 'center',
-    borderBottomColor: '#e5e7eb',
+    backgroundColor: '#fff',
+    borderBottomColor: '#dbe4f0',
     borderBottomWidth: 1,
+    borderTopColor: '#dbe4f0',
+    borderTopWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    marginHorizontal: 12,
+    marginTop: 8,
+    paddingHorizontal: 14,
     paddingVertical: 10,
+    borderRadius: 12,
   },
   topBarTitle: {
-    color: '#111827',
+    color: '#0f172a',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -182,10 +197,15 @@ const styles = StyleSheet.create({
     width: 40,
   },
   webview: {
+    borderColor: '#dbe4f0',
+    borderRadius: 14,
+    borderWidth: 1,
     flex: 1,
+    margin: 12,
+    overflow: 'hidden',
   },
   message: {
-    color: '#111827',
+    color: '#0f172a',
     fontSize: 16,
     textAlign: 'center',
   },
@@ -195,7 +215,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   link: {
-    color: '#2563eb',
+    color: '#1d4ed8',
     fontWeight: '600',
     marginTop: 12,
   },

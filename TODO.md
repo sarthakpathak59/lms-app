@@ -1,23 +1,55 @@
-# Task: WebView Implementation & Logout Navigation
+# LMS App Status
 
-## Steps to Complete:
+## Implemented
 
-- [x] 1. Install `react-native-webview` package using expo install
-- [x] 2. Update AuthContext.tsx to navigate to login after logout
-- [x] 3. Test the implementation
+### Part 1: Authentication & User Management
+- [x] Login/register via `/api/v1/users` endpoints
+- [x] Secure token storage via `expo-secure-store`
+- [x] Auto-login on app restart + token validation
+- [x] Logout flow
+- [x] Basic refresh-token handling
+- [x] Profile info + avatar URL update + user stats
 
-## Implementation Details:
+### Part 2: Course Catalog
+- [x] Fetch instructors from `/api/v1/public/randomusers`
+- [x] Fetch courses from `/api/v1/public/randomproducts`
+- [x] Scrollable course list with thumbnail/instructor/title/description/bookmark
+- [x] Pull-to-refresh
+- [x] Search filter
+- [x] Course details screen
+- [x] Enroll action with visual feedback
+- [x] Bookmark toggle with persistent local storage
 
-### Step 1: Install react-native-webview
-- Run `npx expo install react-native-webview` to add the dependency
-- ✅ Completed - react-native-webview@13.15.0 installed
+### Part 3: WebView Integration
+- [x] Embedded content screen
+- [x] Local HTML template rendering for course content
+- [x] Native-to-Web bridge data passed using request `headers` + injected script
+- [x] WebView load error handling
 
-### Step 2: Update logout functionality
-- Modified the logout function in AuthContext.tsx to navigate to the login page after clearing tokens
-- The navigation uses `router.replace('/(auth)/login')` to ensure the user can't go back to the previous authenticated screen
-- ✅ Completed
+### Part 4: Native Features
+- [x] Notification permissions flow
+- [x] Bookmark milestone notification at 5+
+- [x] 24-hour inactivity reminder scheduling
 
-### Step 3: Session expiration handling
-- Added navigation to login page when session expires (401 error)
-- ✅ Completed
+### Part 5: State Management & Performance
+- [x] Global auth/course state with context
+- [x] `SecureStore` for auth data
+- [x] AsyncStorage (with SecureStore fallback) for app state
+- [x] Course/bookmark/preferences state persisted
+- [x] LegendList wrapper with FlatList fallback
+- [x] Stable `keyExtractor`
+- [x] Memoized list items
+- [x] Pull-to-refresh behavior
 
+### Part 6: Error Handling
+- [x] Retry mechanism for network/server failures
+- [x] User-friendly API error messages
+- [x] Timeout handling
+- [x] Offline banner and offline empty-state
+- [x] WebView error state
+
+## Remaining Manual/External Work
+- [ ] Upgrade to latest Expo SDK (currently SDK 54 in repo) and run dependency alignment with network access.
+- [ ] Capture and commit screenshots for main screens.
+- [ ] Record and attach demo video (3-5 minutes).
+- [ ] Build and share development APK artifact.

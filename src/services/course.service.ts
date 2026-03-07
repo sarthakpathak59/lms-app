@@ -151,23 +151,6 @@ export const fetchCoursesWithInstructors = async (): Promise<Course[]> => {
     ),
   ]);
 
-  // Console the raw API responses
-  if (usersResult.status === 'fulfilled') {
-    console.log('=== USERS API RESPONSE ===');
-    console.log(JSON.stringify(usersResult.value.data, null, 2));
-  } else {
-    console.log('=== USERS API ERROR ===');
-    console.log(usersResult.reason);
-  }
-
-  if (productsResult.status === 'fulfilled') {
-    console.log('=== PRODUCTS API RESPONSE ===');
-    console.log(JSON.stringify(productsResult.value.data, null, 2));
-  } else {
-    console.log('=== PRODUCTS API ERROR ===');
-    console.log(productsResult.reason);
-  }
-
   if (productsResult.status !== 'fulfilled') {
     throw new Error('Unable to fetch course catalog right now.');
   }

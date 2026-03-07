@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { CourseProvider } from '@/context/CourseContext';
 import { useAppBootstrap } from '@/hooks/useAppBootstrap';
+import { StatusBar } from 'expo-status-bar';
 
 function RootNavigator() {
   const { userToken, loading } = useAuth();
@@ -28,6 +29,7 @@ function RootNavigator() {
           name="webview/[id]"
           options={{ presentation: 'modal', headerShown: false }}
         />
+        <Stack.Screen name="no-internet" options={{ headerShown: false }} />
       </Stack>
     );
   }
@@ -44,9 +46,16 @@ function AppShell() {
   useAppBootstrap();
 
   return (
-    <CourseProvider>
-      <RootNavigator />
-    </CourseProvider>
+    <>
+      <StatusBar
+        backgroundColor="#f3f6fb"
+        style="dark"
+        translucent={false}
+      />
+      <CourseProvider>
+        <RootNavigator />
+      </CourseProvider>
+    </>
   );
 }
 

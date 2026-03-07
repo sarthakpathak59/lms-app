@@ -7,6 +7,7 @@ import {
 } from '@/services/auth.service';
 import { DecodedJwt, User } from '@/types/auth';
 import { getErrorMessage } from '@/utils/error';
+import { storage } from '@/utils/storage';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from 'jwt-decode';
@@ -151,13 +152,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       setUserToken(tokens.accessToken);
-
-      if (loginUserData) {
-        setUser(loginUserData);
-      } else {
-        const me = await fetchCurrentUser();
-        setUser(me);
-      }
+      const me = await fetchCurrentUser();
+      setUser(me || loginUserData || null);
 
       return 'Login successful.';
     } catch (err) {
@@ -185,6 +181,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     await clearSession();
+    await storage.clearAppData();
     router.replace('/(auth)/login');
   };
 

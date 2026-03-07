@@ -66,21 +66,21 @@ export const CourseCard = memo(CourseCardComponent);
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
-    borderRadius: 14,
+    borderRadius: 16,
     marginHorizontal: 16,
     marginVertical: 8,
     overflow: 'hidden',
-    borderColor: '#e5e7eb',
+    borderColor: '#dbe4f0',
     borderWidth: 1,
   },
   thumbnail: {
     width: '100%',
-    height: 150,
-    backgroundColor: '#f3f4f6',
+    height: 158,
+    backgroundColor: '#e2e8f0',
   },
   content: {
-    padding: 12,
-    gap: 10,
+    padding: 14,
+    gap: 8,
   },
   headerRow: {
     alignItems: 'center',
@@ -89,13 +89,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   title: {
-    color: '#111827',
+    color: '#0f172a',
     flex: 1,
     fontSize: 16,
     fontWeight: '700',
   },
   description: {
-    color: '#4b5563',
+    color: '#475569',
     lineHeight: 20,
   },
   instructorRow: {
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     width: 20,
   },
   instructor: {
-    color: '#374151',
+    color: '#334155',
     fontWeight: '500',
   },
 });

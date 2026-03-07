@@ -2,6 +2,16 @@ import * as SecureStore from 'expo-secure-store';
 
 const PREFIX = 'lms_app';
 const SECURE_STORE_CHUNK_SIZE = 1800;
+const APP_LOCAL_KEYS = [
+  'bookmarks',
+  'enrolled_courses',
+  'user_preferences',
+  'courses_cache',
+  'profile_picture',
+  'last_opened_at',
+  'bookmark_threshold_notified',
+  'inactivity_notification_id',
+];
 
 const keyWithPrefix = (key: string) =>
   `${PREFIX}_${key}`.replace(/[^A-Za-z0-9._-]/g, '_');
@@ -173,6 +183,10 @@ export const appStorage = {
 
   async setJSON(key: string, value: unknown): Promise<void> {
     await appStorage.setString(key, JSON.stringify(value));
+  },
+
+  async clearAppData(): Promise<void> {
+    await Promise.all(APP_LOCAL_KEYS.map(key => appStorage.remove(key)));
   },
 };
 

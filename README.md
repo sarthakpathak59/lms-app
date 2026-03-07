@@ -78,17 +78,12 @@ EXPO_PUBLIC_API_BASE_URL=https://api.freeapi.app/api/v1
 npm run start
 ```
 
-## Optional Packages For Full Feature Runtime
-These are loaded dynamically in code and should be installed in normal dev environments:
-```bash
-npm install @react-native-async-storage/async-storage react-native-webview expo-notifications
-```
-
 ## Build (APK)
 Use EAS development build:
 ```bash
 npx eas build -p android --profile development
 ```
+Build profiles are defined in `eas.json`.
 
 ## Key Architecture Decisions
 - Tokens and user session data are kept in SecureStore.
@@ -98,7 +93,13 @@ npx eas build -p android --profile development
 
 ## Known Limitations
 - NativeWind is not yet integrated in this snapshot (current UI uses `StyleSheet`).
-- In this environment, network-restricted package install prevented adding optional dependencies automatically.
+- In this environment, network access is restricted, so dependency alignment and SDK upgrades cannot be completed automatically.
+
+## Outstanding Submission Items
+- Upgrade project to the latest Expo SDK and run dependency alignment with network access.
+- Capture and commit screenshots of main screens in `submission/screenshots/`.
+- Record and attach the 3-5 minute demo video.
+- Generate and share the development APK artifact.
 
 ## Screens To Capture For Submission
 - Login / Register

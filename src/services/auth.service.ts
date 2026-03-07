@@ -13,8 +13,84 @@ interface RegisterPayload {
   role?: string;
 }
 
+const asTrimmedString = (value: unknown): string | undefined => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const next = value.trim();
+  return next.length > 0 ? next : undefined;
+};
+
+const normalizeUser = (raw: any): User | null => {
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+
+  const firstName = asTrimmedString(raw.firstName);
+  const lastName = asTrimmedString(raw.lastName);
+  const composedName =
+    firstName || lastName
+      ? `${firstName || ''} ${lastName || ''}`.trim()
+      : undefined;
+
+  const username =
+    asTrimmedString(raw.username) ||
+    asTrimmedString(raw.userName) ||
+    asTrimmedString(raw.name) ||
+    asTrimmedString(raw.fullName) ||
+    composedName;
+
+  const email =
+    asTrimmedString(raw.email) ||
+    asTrimmedString(raw.mail) ||
+    asTrimmedString(raw.userEmail);
+
+  const role =
+    asTrimmedString(raw.role) ||
+    asTrimmedString(raw.userRole) ||
+    asTrimmedString(raw.type);
+
+  const avatarUrl =
+    asTrimmedString(raw.avatarUrl) ||
+    asTrimmedString(raw.avatar) ||
+    asTrimmedString(raw.profilePicture) ||
+    asTrimmedString(raw.image);
+
+  if (!username && !email && !role && !avatarUrl && !raw._id && !raw.id) {
+    return null;
+  }
+
+  return {
+    _id: raw._id,
+    id: raw.id,
+    username,
+    email,
+    role,
+    avatarUrl,
+  };
+};
+
 const extractUser = (payload: any): User | null => {
-  return payload?.data?.user || payload?.user || null;
+  const candidates = [
+    payload?.data?.user,
+    payload?.user,
+    payload?.data?.data?.user,
+    payload?.data?.data?.data?.user,
+    payload?.data?.data?.data,
+    payload?.data?.data,
+    payload?.data,
+    payload,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeUser(candidate);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return null;
 };
 
 const extractTokens = (payload: any): AuthTokens | null => {
@@ -62,7 +138,7 @@ export const refreshAccessToken = async (refreshToken: string) => {
 export const fetchCurrentUser = async (): Promise<User | null> => {
   try {
     const response = await api.get('/users/me');
-    return response.data?.data || response.data?.user || response.data || null;
+    return extractUser(response.data);
   } catch {
     return null;
   }
