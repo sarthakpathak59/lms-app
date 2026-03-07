@@ -1,6 +1,8 @@
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -47,59 +49,69 @@ export default function LoginScreen() {
   };
 
   return (
-    <AppScreen contentContainerStyle={styles.container} scroll>
-      <View style={styles.accentCircleLarge} />
-      <View style={styles.accentCircleSmall} />
+    <AppScreen>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoiding}
+      >
+        <View style={styles.container}>
+          <View style={styles.accentCircleLarge} />
+          <View style={styles.accentCircleSmall} />
 
-      <View style={styles.card}>
-        <Text style={styles.eyebrow}>LMS APP</Text>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Login to continue learning</Text>
+          <View style={styles.card}>
+            <Text style={styles.eyebrow}>LMS APP</Text>
+            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.subtitle}>Login to continue learning</Text>
 
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          autoCapitalize="none"
-          keyboardType="email-address"
-          onChangeText={setEmail}
-          placeholder="you@example.com"
-          placeholderTextColor="#94a3b8"
-          style={styles.input}
-          value={email}
-        />
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              autoCapitalize="none"
+              keyboardType="email-address"
+              onChangeText={setEmail}
+              placeholder="you@example.com"
+              placeholderTextColor="#94a3b8"
+              style={styles.input}
+              value={email}
+            />
 
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          onChangeText={setPassword}
-          placeholder="Enter your password"
-          placeholderTextColor="#94a3b8"
-          secureTextEntry
-          style={styles.input}
-          value={password}
-        />
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              onChangeText={setPassword}
+              placeholder="Enter your password"
+              placeholderTextColor="#94a3b8"
+              secureTextEntry
+              style={styles.input}
+              value={password}
+            />
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <TouchableOpacity
-          disabled={loading}
-          onPress={handleLogin}
-          style={[styles.button, loading ? styles.buttonDisabled : null]}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Login</Text>
-          )}
-        </TouchableOpacity>
+            <TouchableOpacity
+              disabled={loading}
+              onPress={handleLogin}
+              style={[styles.button, loading ? styles.buttonDisabled : null]}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Login</Text>
+              )}
+            </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-          <Text style={styles.link}>Don&apos;t have an account? Sign up</Text>
-        </TouchableOpacity>
-      </View>
+            <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
+              <Text style={styles.link}>Don&apos;t have an account? Sign up</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  keyboardAvoiding: {
+    flex: 1,
+  },
   container: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -163,6 +175,7 @@ const styles = StyleSheet.create({
     borderColor: '#dbe4f0',
     borderRadius: 12,
     borderWidth: 1,
+    color: '#0f172a',
     marginBottom: 12,
     padding: 14,
   },

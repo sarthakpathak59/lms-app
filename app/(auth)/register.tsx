@@ -1,6 +1,8 @@
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -71,69 +73,79 @@ export default function RegisterScreen() {
   };
 
   return (
-    <AppScreen contentContainerStyle={styles.container} scroll>
-      <View style={styles.accentCircleLarge} />
-      <View style={styles.accentCircleSmall} />
+    <AppScreen>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoiding}
+      >
+        <View style={styles.container}>
+          <View style={styles.accentCircleLarge} />
+          <View style={styles.accentCircleSmall} />
 
-      <View style={styles.card}>
-        <Text style={styles.eyebrow}>GET STARTED</Text>
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Join the learning platform</Text>
+          <View style={styles.card}>
+            <Text style={styles.eyebrow}>GET STARTED</Text>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Join the learning platform</Text>
 
-        <Text style={styles.label}>Username</Text>
-        <TextInput
-          autoCapitalize="none"
-          onChangeText={setUsername}
-          placeholder="your_username"
-          placeholderTextColor="#94a3b8"
-          style={styles.input}
-          value={username}
-        />
+            <Text style={styles.label}>Username</Text>
+            <TextInput
+              autoCapitalize="none"
+              onChangeText={setUsername}
+              placeholder="your_username"
+              placeholderTextColor="#94a3b8"
+              style={styles.input}
+              value={username}
+            />
 
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          autoCapitalize="none"
-          keyboardType="email-address"
-          onChangeText={setEmail}
-          placeholder="you@example.com"
-          placeholderTextColor="#94a3b8"
-          style={styles.input}
-          value={email}
-        />
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              autoCapitalize="none"
+              keyboardType="email-address"
+              onChangeText={setEmail}
+              placeholder="you@example.com"
+              placeholderTextColor="#94a3b8"
+              style={styles.input}
+              value={email}
+            />
 
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          onChangeText={setPassword}
-          placeholder="Create a strong password"
-          placeholderTextColor="#94a3b8"
-          secureTextEntry
-          style={styles.input}
-          value={password}
-        />
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              onChangeText={setPassword}
+              placeholder="Create a strong password"
+              placeholderTextColor="#94a3b8"
+              secureTextEntry
+              style={styles.input}
+              value={password}
+            />
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <TouchableOpacity
-          disabled={loading}
-          onPress={handleRegister}
-          style={[styles.button, loading ? styles.buttonDisabled : null]}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Register</Text>
-          )}
-        </TouchableOpacity>
+            <TouchableOpacity
+              disabled={loading}
+              onPress={handleRegister}
+              style={[styles.button, loading ? styles.buttonDisabled : null]}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Register</Text>
+              )}
+            </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.link}>Already have an account? Login</Text>
-        </TouchableOpacity>
-      </View>
+            <TouchableOpacity onPress={() => router.back()}>
+              <Text style={styles.link}>Already have an account? Login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  keyboardAvoiding: {
+    flex: 1,
+  },
   container: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -197,6 +209,7 @@ const styles = StyleSheet.create({
     borderColor: '#dbe4f0',
     borderRadius: 12,
     borderWidth: 1,
+    color: '#0f172a',
     marginBottom: 12,
     padding: 14,
   },
