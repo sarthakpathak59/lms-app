@@ -53,3 +53,7 @@
 - [ ] Capture and commit screenshots for main screens.
 - [ ] Record and attach demo video (3-5 minutes).
 - [ ] Build and share development APK artifact.
+
+## command to run 
+- npx expo run:android       
+- npx expo run:ios    

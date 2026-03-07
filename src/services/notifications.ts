@@ -1,5 +1,6 @@
 import { storage } from '@/utils/storage';
 import Constants from 'expo-constants';
+import * as ExpoNotifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 const LAST_OPENED_KEY = 'last_opened_at';
@@ -19,13 +20,7 @@ const getNotificationsModule = (): any | null => {
     return null;
   }
 
-  try {
-    // Optional dependency in this environment.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require('expo-notifications');
-  } catch {
-    return null;
-  }
+  return ExpoNotifications;
 };
 
 const initializeNotifications = async (): Promise<any | null> => {
@@ -169,7 +164,6 @@ export const refreshInactivityReminder = async (): Promise<void> => {
     try {
       await Notifications.cancelScheduledNotificationAsync(previousNotificationId);
     } catch {
-      // Notification may have already fired or been cleared by OS.
     }
   }
 

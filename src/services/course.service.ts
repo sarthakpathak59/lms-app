@@ -62,8 +62,6 @@ const extractArray = (payload: any): any[] => {
 };
 
 const extractProducts = (payload: any): any[] => {
-  // /public/randomproducts response shape:
-  // { data: { data: [...] } }
   if (Array.isArray(payload?.data?.data)) {
     return payload.data.data;
   }

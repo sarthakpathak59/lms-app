@@ -1,17 +1,9 @@
 import { useMemo, useRef } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { WebView } from 'react-native-webview';
 import { useCourses } from '@/context/CourseContext';
 import { AppScreen } from '@/components/AppScreen';
-
-const getWebViewModule = (): any | null => {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require('react-native-webview');
-  } catch {
-    return null;
-  }
-};
 
 const escapeHtml = (value: string): string =>
   value
@@ -26,9 +18,6 @@ export default function WebContentScreen() {
   const courseId = Array.isArray(params.id) ? params.id[0] : params.id;
   const { getCourseById } = useCourses();
   const course = courseId ? getCourseById(courseId) : undefined;
-
-  const webViewModule = getWebViewModule();
-  const WebView = webViewModule?.WebView;
   const webViewRef = useRef<any>(null);
 
   const bridgeHeaders = useMemo(
@@ -117,20 +106,6 @@ export default function WebContentScreen() {
     );
   }
 
-  if (!WebView) {
-    return (
-      <AppScreen contentContainerStyle={styles.centered}>
-        <Text style={styles.message}>WebView package is not installed in this environment.</Text>
-        <Text style={styles.subMessage}>
-          Install `react-native-webview` to enable embedded content rendering.
-        </Text>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.link}>Close</Text>
-        </TouchableOpacity>
-      </AppScreen>
-    );
-  }
-
   return (
     <AppScreen contentContainerStyle={styles.container}>
       <View style={styles.topBar}>
@@ -150,10 +125,6 @@ export default function WebContentScreen() {
         onMessage={(event: { nativeEvent: { data: string } }) => {
           if (event.nativeEvent.data === 'webview_loaded') {
             webViewRef.current?.injectJavaScript(nativeBridgeScript);
-          }
-
-          if (event.nativeEvent.data === 'native_headers_received') {
-            // Native-to-Web communication verification point.
           }
         }}
         source={webviewSource}
@@ -207,11 +178,6 @@ const styles = StyleSheet.create({
   message: {
     color: '#0f172a',
     fontSize: 16,
-    textAlign: 'center',
-  },
-  subMessage: {
-    color: '#6b7280',
-    marginTop: 8,
     textAlign: 'center',
   },
   link: {

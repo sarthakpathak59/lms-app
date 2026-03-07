@@ -46,8 +46,6 @@ const isTokenValid = (token: string | null): boolean => {
     const now = Math.floor(Date.now() / 1000);
     return decoded.exp > now;
   } catch {
-    // Some backends return opaque (non-JWT) tokens.
-    // Keep the session and let /users/me or 401 handling decide validity.
     return true;
   }
 };
@@ -105,7 +103,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
           }
         } catch {
-          // Refresh token failed (e.g. 401): clear session gracefully.
         }
 
         await clearSession();

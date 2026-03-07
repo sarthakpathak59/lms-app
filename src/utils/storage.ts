@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 
 const PREFIX = 'lms_app';
@@ -100,14 +101,7 @@ const getAsyncStorage = (): {
     return null;
   }
 
-  try {
-    // Optional dependency in environments where install is unavailable.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const module = require('@react-native-async-storage/async-storage');
-    return module.default ?? module;
-  } catch {
-    return null;
-  }
+  return AsyncStorage;
 };
 
 export const appStorage = {
